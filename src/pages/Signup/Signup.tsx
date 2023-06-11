@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 const primaryGreenColor = "#144E49";
 
 const Signup = () => {
@@ -79,7 +80,8 @@ const Form = () => {
       })
       .catch((error) => {
         setIsLoading(false);
-        handleOnError(error.response.data.message);
+        handleOnError("Something went wrong!");
+        // handleOnError(error.response.data.message);
       });
   }
   function onInputChanged(event: any) {
@@ -106,6 +108,9 @@ const Form = () => {
     setAlertSeverity("success");
     setAlertMesage(message);
   }
+
+  const navigate = useNavigate();
+
   return (
     <>
       <Snackbar open={isSnackbarOpen} autoHideDuration={3000} onClose={onClose}>
@@ -169,27 +174,45 @@ const Form = () => {
                 label="Password"
               ></InputField>
             </Grid>
-            {isLoading == true ? (
-              <CircularProgress></CircularProgress>
-            ) : (
-              <Grid item>
-                <Box m={10}>
-                  <Button
-                    variant="contained"
-                    onClick={() => {
-                      onCreateAccountClicked();
-                    }}
-                  >
-                    Create Account
-                  </Button>
-                </Box>
-              </Grid>
-            )}
+            <Grid item>
+              <Box m={10}>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    onCreateAccountClicked();
+                  }}
+                >
+                  {isLoading == true ? (
+                    <CircularProgress
+                      sx={{ color: "white" }}
+                    ></CircularProgress>
+                  ) : (
+                    <Typography>Create Account</Typography>
+                  )}
+                </Button>
+              </Box>
+            </Grid>
             {/*  */}
             <Grid item>
-              <Typography color={primaryGreenColor}>
-                Already have an account? Log in
-              </Typography>
+              <Grid container>
+                <Grid item>
+                  <Typography color={primaryGreenColor}>
+                    Already have an account?
+                  </Typography>
+                </Grid>
+                <Box width={10}></Box>
+                <Grid item>
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      navigate("/login");
+                    }}
+                  >
+                    {" "}
+                    Log In
+                  </Button>
+                </Grid>
+              </Grid>
             </Grid>
             {/*  */}
           </Grid>
