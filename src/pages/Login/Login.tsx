@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface AlertConfig {
   message: string;
@@ -17,6 +18,7 @@ interface AlertConfig {
 }
 
 function Login() {
+  const navigate = useNavigate();
   const [loginPayload, setLoginPayload] = useState({
     email: String,
     password: String,
@@ -42,12 +44,14 @@ function Login() {
     setLoading(false);
     setIsSnackbarOpen(true);
     setAlertConfig({ severity: "success", message: message });
+    navigate("/home");
   }
   function onLoginClick() {
     setLoading(true);
     axios
-      .post("http://192.168.1.64:3000/auth/signin", loginPayload)
+      .post('http://192.168.1.64:3000/auth/signin', loginPayload)
       .then((response) => {
+        localStorage.setItem("authToken", response.data.access_token);
         handleOnSuccess("Login Successful!");
       })
       .catch((error) => {
