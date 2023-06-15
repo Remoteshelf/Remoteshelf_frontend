@@ -11,6 +11,7 @@ import {
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Config } from "../../config/config";
 
 interface AlertConfig {
   message: string;
@@ -49,12 +50,13 @@ function Login() {
   function onLoginClick() {
     setLoading(true);
     axios
-      .post('http://192.168.1.64:3000/auth/signin', loginPayload)
+      .post(`${Config.baseUrl}/auth/signin`, loginPayload)
       .then((response) => {
         localStorage.setItem("authToken", response.data.access_token);
         handleOnSuccess("Login Successful!");
       })
       .catch((error) => {
+        console.log(error);
         if (error.response.status == 403) {
           handleOnError(error.response.data.message);
         } else {
