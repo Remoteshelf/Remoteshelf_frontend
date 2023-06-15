@@ -12,6 +12,7 @@ import {
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Config } from "../../config/config";
 const primaryGreenColor = "#144E49";
 
 const Signup = () => {
@@ -71,7 +72,7 @@ const Form = () => {
   function onCreateAccountClicked() {
     setIsLoading(true);
     axios
-      .post("http://192.168.1.64:3000/auth/signup", formData)
+      .post(`${Config.baseUrl}/auth/signup`, formData)
       .then((response) => {
         if (response.status == 201) {
           handleOnSuccess("Signed up!");

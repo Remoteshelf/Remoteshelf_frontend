@@ -14,6 +14,7 @@ import React, { ChangeEvent, useEffect, useState } from "react";
 import axios from "axios";
 import { FolderDto } from "../../dto/FolderDto";
 import { FileDto } from "../../dto/FileDto";
+import { Config } from "../../config/config";
 
 const Home = () => {
   const [folders, setFolders] = useState([]);
@@ -24,7 +25,7 @@ const Home = () => {
 
   const fetchFolders = () => {
     axios
-      .get("http://192.168.1.64:3000/folder/root", {
+      .get(`${Config.baseUrl}/folder/root`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
