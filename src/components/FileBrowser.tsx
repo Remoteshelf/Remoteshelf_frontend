@@ -1,6 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
-  Box,
   Button,
   CircularProgress,
   Dialog,
@@ -98,7 +97,7 @@ const BrowsingPage = ({
           response.data.folders.map((folder: FolderDto) => (
             <Grid item key={folder.id}>
               <Folder
-                name={folder.name}
+                folder={folder}
                 onFolderClick={() => {
                   handleOnFolderClick(folder.id, folder.name);
                 }}
@@ -231,31 +230,37 @@ const BrowsingPage = ({
             backgroundColor: `rgba(69,161,77,0.05)`,
           }}
         >
-          <Grid container direction={"column"}>
-            <Grid item>
-              <FileUploadButton
-                onClick={() => {
-                  setIsFileDialogOpen(true);
-                }}
-              ></FileUploadButton>
+          <Grid
+            container
+            sx={{ height: "100vh", paddingTop: "10px", paddingBottom: "10px" }}
+            alignContent={"space-between"}
+          >
+            <Grid container direction={"column"}>
+              <Grid item>
+                <FileUploadButton
+                  onClick={() => {
+                    setIsFileDialogOpen(true);
+                  }}
+                ></FileUploadButton>
+              </Grid>
+              <Grid item>
+                <CreateFolderButton
+                  onClick={() => {
+                    setIsDialogOpen(true);
+                  }}
+                ></CreateFolderButton>
+              </Grid>
             </Grid>
-            <Grid item>
-              <CreateFolderButton
+            <Grid item sx={{ width: "100%" }}>
+              <CustomListItemButton
+                title="Logout"
+                icon={<icons.Logout></icons.Logout>}
                 onClick={() => {
-                  setIsDialogOpen(true);
+                  localStorage.clear();
+                  navigate("/login");
                 }}
-              ></CreateFolderButton>
+              ></CustomListItemButton>
             </Grid>
-          </Grid>
-          <Grid item>
-            <CustomListItemButton
-              title="Logout"
-              icon={<icons.Logout></icons.Logout>}
-              onClick={() => {
-                localStorage.clear();
-                navigate("/login");
-              }}
-            ></CustomListItemButton>
           </Grid>
         </Grid>
 
@@ -437,26 +442,28 @@ const CreateFolderButton = (props: CreateFolderProps) => {
 };
 
 interface FolderProps {
-  name: string;
+  folder: FolderDto;
   onFolderClick: () => void;
 }
 
-const Folder = ({ name, onFolderClick }: FolderProps) => {
+const Folder = (props: FolderProps) => {
   return (
-    <Button
-      sx={{
-        color: primaryGreenColor,
-        textTransform: "none",
-      }}
-      onClick={onFolderClick}
-    >
-      <Grid container direction={"column"} flex={"Grid"}>
-        <Grid item>
-          <icons.Folder></icons.Folder>
+    <>
+      <Button
+        sx={{
+          color: primaryGreenColor,
+          textTransform: "none",
+        }}
+        onDoubleClick={props.onFolderClick}
+      >
+        <Grid container direction={"column"} flex={"Grid"}>
+          <Grid item>
+            <icons.Folder></icons.Folder>
+          </Grid>
+          <Grid item> {props.folder.name}</Grid>
         </Grid>
-        <Grid item> {name}</Grid>
-      </Grid>
-    </Button>
+      </Button>
+    </>
   );
 };
 interface FileProps {
