@@ -2,23 +2,24 @@ import {
   Alert,
   AlertColor,
   Button,
-  Card,
   CircularProgress,
   Grid,
   Snackbar,
   TextField,
+  Typography,
 } from "@mui/material";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Config } from "../../config/config";
+const primaryGreenColor = "#144E49";
 
 interface AlertConfig {
   message: string;
   severity: AlertColor | undefined;
 }
 
-function Login() {
+function LoginForm() {
   const navigate = useNavigate();
   const [loginPayload, setLoginPayload] = useState({
     email: String,
@@ -30,6 +31,13 @@ function Login() {
     severity: "success",
     message: "Hi there",
   });
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      navigate("/home");
+    }
+  }, [navigate]);
   function onFieldValueChange(event: any) {
     setLoginPayload({
       ...loginPayload,
@@ -73,7 +81,6 @@ function Login() {
         alignContent={"center"}
       >
         <Grid item>
-          {" "}
           <Snackbar
             open={isSnackbarOpen}
             autoHideDuration={3000}
@@ -85,45 +92,122 @@ function Login() {
           </Snackbar>
         </Grid>
         <Grid item>
-          <Card raised sx={{ height: 500, width: 500 }}>
+          <Grid
+            paddingLeft={10}
+            container
+            direction={"column"}
+            justifyContent={"center"}
+            alignContent={"center"}
+          >
+            <Grid item>
+              <Typography
+                style={{
+                  marginBottom: 60,
+                  fontSize: 32,
+                  color: primaryGreenColor,
+                }}
+              >
+                Welcome to Remoteshelf, Let's begin!
+              </Typography>
+            </Grid>
+            <Grid item>
+              <FormField
+                label="Email"
+                name="email"
+                onInput={onFieldValueChange}
+              ></FormField>
+            </Grid>{" "}
+            <Grid item>
+              <FormField
+                label="Password"
+                name="password"
+                onInput={onFieldValueChange}
+              ></FormField>
+            </Grid>
+            <Grid item>
+              {isLoading == true ? (
+                <CircularProgress />
+              ) : (
+                <Button
+                  style={{ width: 400, backgroundColor: primaryGreenColor }}
+                  variant="contained"
+                  onClick={onLoginClick}
+                >
+                  Login
+                </Button>
+              )}
+            </Grid>
             <Grid
               container
-              direction={"column"}
+              paddingTop={"20px"}
               justifyContent={"center"}
-              height={500}
-              alignContent={"center"}
+              alignItems={"center"}
             >
-              <Grid item>
-                <TextField
-                  placeholder="Email"
-                  name="email"
-                  variant="standard"
-                  onInput={onFieldValueChange}
-                ></TextField>
-              </Grid>{" "}
-              <Grid item>
-                <TextField
-                  onInput={onFieldValueChange}
-                  placeholder="Password"
-                  name="password"
-                  variant="standard"
-                ></TextField>
-              </Grid>
-              <Grid item>
-                {isLoading == true ? (
-                  <CircularProgress />
-                ) : (
-                  <Button variant="contained" onClick={onLoginClick}>
-                    Login
-                  </Button>
-                )}
-              </Grid>
+              <Typography>A new user?</Typography>
+              <Button
+                onClick={() => {
+                  navigate("/signup");
+                }}
+                style={{
+                  paddingLeft: 10,
+                  textTransform: "none",
+                  color: primaryGreenColor,
+                }}
+                variant="text"
+              >
+                Signup
+              </Button>
             </Grid>
-          </Card>
+          </Grid>
         </Grid>
       </Grid>
     </>
   );
 }
+interface FormProps {
+  name: string;
+  label: string;
+  onInput: (event: any) => void;
+}
+const FormField = (props: FormProps) => {
+  return (
+    <TextField
+      style={{
+        width: 400,
+        height: 100,
+      }}
+      label={props.label}
+      onInput={props.onInput}
+      name={props.name}
+      variant="standard"
+    ></TextField>
+  );
+};
+const BackgroundImage = () => {
+  return (
+    <img
+      style={{
+        position: "absolute",
+        height: "100%",
+      }}
+      src="src/assets/login_background.jpg"
+    ></img>
+  );
+};
+
+const Login = () => {
+  return (
+    <>
+      <Grid container>
+        <Grid item xs={4}>
+          <LoginForm></LoginForm>
+        </Grid>
+        <Grid item xs={8} height={"100vh"}>
+          <BackgroundImage></BackgroundImage>
+        </Grid>
+      </Grid>
+    </>
+  );
+};
 
 export default Login;
