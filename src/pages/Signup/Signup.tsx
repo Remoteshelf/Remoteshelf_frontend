@@ -93,7 +93,7 @@ const ForeGroundImage = () => {
     <img
       src="../../src/assets/signup_background1.png"
       style={{
-        height: "50%",
+        height: "40%",
         position: "absolute",
         bottom: 0,
         right: 0,
@@ -251,7 +251,7 @@ const Form = () => {
             ></InputField>
           </Grid>
           <Grid item alignSelf={"center"}>
-            <Box m={10}>
+            <Box m={5}>
               <Button
                 variant="contained"
                 style={{ backgroundColor: primaryGreenColor }}
