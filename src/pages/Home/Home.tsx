@@ -6,12 +6,12 @@ const Home = () => {
   const navigate = useNavigate();
   return (
     <div>
-      <Button onClick={()=>{
+      {/* <Button onClick={()=>{
         localStorage.clear();
         navigate('/login');
       }} style={{ textTransform: "none" }} variant="contained">
         Sign out
-      </Button>
+      </Button> */}
       <FileBrowser></FileBrowser>
     </div>
   );

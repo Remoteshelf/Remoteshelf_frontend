@@ -6,9 +6,13 @@ import {
   Dialog,
   DialogActions,
   DialogTitle,
-  Fab,
   Grid,
+  Input,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
   TextField,
+  Typography,
 } from "@mui/material";
 import * as icons from "@mui/icons-material";
 import { ChangeEvent, useEffect, useState } from "react";
@@ -16,13 +20,17 @@ import axios from "axios";
 import { FolderDto } from "../dto/FolderDto";
 import { Config } from "../config/config";
 import { FileDto } from "../dto/FileDto";
+import { useNavigate } from "react-router-dom";
+const primaryGreenColor = "#144E49";
 
 const FileBrowser = () => {
   const [page, setPage] = useState(<CircularProgress></CircularProgress>);
   const paths = ["/root"];
+  const folders = [""];
   useEffect(() => {
     setPage(
       <BrowsingPage
+        folderRecord={folders}
         pathRecord={paths}
         page={page}
         setPage={setPage}
@@ -36,6 +44,7 @@ const FileBrowser = () => {
 export default FileBrowser;
 
 interface BrowsingPageProps {
+  folderRecord: Array<string>;
   pathRecord: Array<string>;
   page: any;
   setPage: React.Dispatch<React.SetStateAction<JSX.Element>>;
@@ -43,6 +52,7 @@ interface BrowsingPageProps {
 }
 
 const BrowsingPage = ({
+  folderRecord,
   setPage,
   path,
   page,
@@ -54,11 +64,20 @@ const BrowsingPage = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
   const [folderId, setFolderId] = useState(0);
-  const handleOnFolderClick = (folderId: number) => {
+  const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleOnFolderClick = (folderId: number, folderName: string) => {
     setFolderId(folderId);
     pathRecord.push(`/all/${folderId}`);
+    if (folderRecord.length > 1) {
+      folderRecord.push(` → ${folderName}`);
+    } else {
+      folderRecord.push(`${folderName}`);
+    }
     setPage(
       <BrowsingPage
+        folderRecord={folderRecord}
         pathRecord={pathRecord}
         page={page}
         setPage={setPage}
@@ -81,7 +100,7 @@ const BrowsingPage = ({
               <Folder
                 name={folder.name}
                 onFolderClick={() => {
-                  handleOnFolderClick(folder.id);
+                  handleOnFolderClick(folder.id, folder.name);
                 }}
               ></Folder>
             </Grid>
@@ -106,10 +125,7 @@ const BrowsingPage = ({
     fetchFilesAndFolders(path);
   }, [path]);
 
-  function handleOnCancelDialog() {
-    setIsDialogOpen(false);
-  }
-  function handleOnCreateDialog() {
+  function handleOnFolderCreate() {
     axios
       .post(
         `${Config.baseUrl}/folder/create`,
@@ -135,7 +151,7 @@ const BrowsingPage = ({
         console.log(error);
       });
   }
-  function onChange(event: any) {
+  function onFolderTextFieldValueChange(event: any) {
     setCreateFolderFieldText(event.target.value);
   }
 
@@ -154,6 +170,7 @@ const BrowsingPage = ({
       })
       .then((response) => {
         fetchFilesAndFolders(path);
+        setIsFileDialogOpen(false);
       })
       .catch((error) => {
         console.log(error);
@@ -165,9 +182,11 @@ const BrowsingPage = ({
   }
 
   function handleOnBackClicked() {
+    folderRecord.pop();
     pathRecord.pop();
     setPage(
       <BrowsingPage
+        folderRecord={folderRecord}
         page={<></>}
         path={pathRecord[pathRecord.length - 1]}
         setPage={setPage}
@@ -177,61 +196,82 @@ const BrowsingPage = ({
   }
   return (
     <>
-      <Dialog
+      <FileUploadDialog
+        onUpload={() => {
+          handleFileUpload();
+        }}
+        onCancel={() => {
+          setIsFileDialogOpen(false);
+        }}
+        open={isFileDialogOpen}
+        onFileChange={handleFileChange}
+        onClose={() => {
+          setIsFileDialogOpen(false);
+        }}
+      ></FileUploadDialog>
+
+      <FolderCreateDialog
         open={isDialogOpen}
+        onCancel={() => {
+          setIsDialogOpen(false);
+        }}
         onClose={() => {
           setIsDialogOpen(false);
         }}
-      >
-        <DialogTitle>Creat a folder of your choice</DialogTitle>
-        <TextField
-          name="foldername"
-          variant="standard"
-          label="Folder Name"
-          onChange={onChange}
-        ></TextField>
-        <DialogActions>
-          <Button onClick={handleOnCancelDialog}>Cancel</Button>
-          <Button onClick={handleOnCreateDialog}>Create</Button>
-        </DialogActions>
-      </Dialog>
+        onChange={onFolderTextFieldValueChange}
+        onCreate={handleOnFolderCreate}
+      ></FolderCreateDialog>
+
       <Grid container>
-        <Grid item height={"100vh"} width={"20%"}>
+        <Grid
+          item
+          height={"100vh"}
+          width={"15%"}
+          sx={{
+            backgroundColor: `rgba(69,161,77,0.05)`,
+          }}
+        >
           <Grid container direction={"column"}>
             <Grid item>
-              {pathRecord.length > 1 && (
-                <Button
-                  onClick={() => {
-                    handleOnBackClicked();
-                  }}
-                >
-                  <icons.ArrowBack></icons.ArrowBack>
-                </Button>
-              )}
-              <Fab
-                variant="extended"
-                color="primary"
-                onClick={handleFileUpload}
-              >
-                Upload File
-              </Fab>
-              <input type="file" onChange={handleFileChange}></input>
+              <FileUploadButton
+                onClick={() => {
+                  setIsFileDialogOpen(true);
+                }}
+              ></FileUploadButton>
             </Grid>
-            <Box height={20}></Box>
             <Grid item>
-              <Fab
-                variant="extended"
-                color="secondary"
+              <CreateFolderButton
                 onClick={() => {
                   setIsDialogOpen(true);
                 }}
-              >
-                Create Folder
-              </Fab>
+              ></CreateFolderButton>
             </Grid>
           </Grid>
+          <Grid item>
+            <CustomListItemButton
+              title="Logout"
+              icon={<icons.Logout></icons.Logout>}
+              onClick={() => {
+                localStorage.clear();
+                navigate("/login");
+              }}
+            ></CustomListItemButton>
+          </Grid>
         </Grid>
-        <Grid item>
+
+        <Grid
+          item
+          sx={{
+            padding: "10px",
+          }}
+        >
+          <DirectoryView
+            directoryList={folderRecord}
+            pathRecord={pathRecord}
+            onBackClick={() => {
+              handleOnBackClicked();
+            }}
+          ></DirectoryView>
           <Grid container spacing={2}>
             {folders.map((folder) => folder)}
             {files.map((file) => file)}
@@ -239,6 +279,160 @@ const BrowsingPage = ({
         </Grid>
       </Grid>
     </>
+  );
+};
+interface FolderCreateDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onCreate: () => void;
+  onCancel: () => void;
+  onChange: (event: any) => void;
+}
+const FolderCreateDialog = (props: FolderCreateDialogProps) => {
+  return (
+    <Dialog open={props.open} onClose={props.onClose}>
+      <DialogTitle>Creat a folder of your choice</DialogTitle>
+      <TextField
+        sx={{
+          margin: "10px",
+        }}
+        name="foldername"
+        variant="standard"
+        label="Folder Name"
+        onChange={props.onChange}
+      ></TextField>
+      <DialogActions>
+        <Button
+          sx={{
+            textTransform: "none",
+            color: "red",
+          }}
+          onClick={props.onClose}
+        >
+          Cancel
+        </Button>
+        <Button
+          sx={{
+            color: primaryGreenColor,
+            textTransform: "none",
+          }}
+          onClick={props.onCreate}
+        >
+          Create
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+interface ListItemButtonProps {
+  onClick: () => void;
+  title: string;
+  icon: any;
+}
+
+const CustomListItemButton = (props: ListItemButtonProps) => {
+  return (
+    <ListItemButton onClick={props.onClick}>
+      <ListItemIcon>{props.icon}</ListItemIcon>
+      <ListItemText>{props.title}</ListItemText>
+    </ListItemButton>
+  );
+};
+
+interface FileUploadDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onFileChange: (event: any) => void;
+  onUpload: () => void;
+  onCancel: () => void;
+}
+const FileUploadDialog = (props: FileUploadDialogProps) => {
+  return (
+    <Dialog open={props.open} onClose={props.onClose}>
+      <DialogTitle>Upload a file</DialogTitle>
+      <Input
+        sx={{
+          margin: "10px",
+        }}
+        type="file"
+        onChange={props.onFileChange}
+      ></Input>
+      <DialogActions>
+        <Button
+          sx={{
+            textTransform: "none",
+            color: "red",
+          }}
+          onClick={props.onCancel}
+        >
+          Cancel
+        </Button>
+        <Button
+          sx={{
+            color: primaryGreenColor,
+            textTransform: "none",
+          }}
+          onClick={props.onUpload}
+        >
+          Upload
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+interface DirectoryViewProps {
+  onBackClick: () => void;
+  pathRecord: Array<string>;
+  directoryList: Array<string>;
+}
+const DirectoryView = (props: DirectoryViewProps) => {
+  return (
+    <>
+      {props.pathRecord.length > 1 && (
+        <Grid container alignItems={"center"}>
+          <Grid item>
+            <Button
+              sx={{
+                color: primaryGreenColor,
+              }}
+              onClick={props.onBackClick}
+            >
+              <icons.ArrowBack></icons.ArrowBack>
+            </Button>
+          </Grid>
+          <Grid item>
+            <Typography sx={{ color: "grey" }}>
+              {props.directoryList.map((each) => each)}
+            </Typography>
+          </Grid>
+        </Grid>
+      )}
+    </>
+  );
+};
+interface FileUploadProps {
+  onClick: () => void;
+}
+const FileUploadButton = (props: FileUploadProps) => {
+  return (
+    <CustomListItemButton
+      icon={<icons.Upload></icons.Upload>}
+      title={"Upload File"}
+      onClick={props.onClick}
+    ></CustomListItemButton>
+  );
+};
+interface CreateFolderProps {
+  onClick: () => void;
+}
+const CreateFolderButton = (props: CreateFolderProps) => {
+  return (
+    <CustomListItemButton
+      onClick={props.onClick}
+      title="Create Folder"
+      icon={<icons.Add></icons.Add>}
+    ></CustomListItemButton>
   );
 };
 
@@ -249,7 +443,13 @@ interface FolderProps {
 
 const Folder = ({ name, onFolderClick }: FolderProps) => {
   return (
-    <Button onClick={onFolderClick}>
+    <Button
+      sx={{
+        color: primaryGreenColor,
+        textTransform: "none",
+      }}
+      onClick={onFolderClick}
+    >
       <Grid container direction={"column"} flex={"Grid"}>
         <Grid item>
           <icons.Folder></icons.Folder>
@@ -264,11 +464,25 @@ interface FileProps {
 }
 const File = ({ name }: FileProps) => {
   return (
-    <Grid container direction={"column"} flex={"Grid"}>
-      <Grid item>
-        <icons.FileCopy></icons.FileCopy>
+    <Button
+      sx={{
+        color: primaryGreenColor,
+        textTransform: "none",
+      }}
+    >
+      <Grid
+        sx={{
+          textTransform: "none",
+        }}
+        container
+        direction={"column"}
+        flex={"Grid"}
+      >
+        <Grid item>
+          <icons.FileCopy></icons.FileCopy>
+        </Grid>
+        <Grid item> {name}</Grid>
       </Grid>
-      <Grid item> {name}</Grid>
-    </Grid>
+    </Button>
   );
 };
