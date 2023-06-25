@@ -110,7 +110,6 @@ const BrowsingPage = ({
             </Grid>
           ))
         );
-
         setFiles(
           response.data.files.map((file: FileDto) => (
             <Grid item key={file.id}>
@@ -547,6 +546,28 @@ const File = (props: FileProps) => {
         handleClosePopupMenu();
       });
   }
+  async function downloadFile() {
+    try {
+      const getEndpoint = `${Config.baseUrl}/file/download/${props.file.id}`;
+      const response = await axios.get(getEndpoint, {
+        responseType: "blob",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+      const fileUrl = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = fileUrl;
+
+      link.download = props.file.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.log("Error downloading", error);
+    }
+    handleClosePopupMenu();
+  }
   return (
     <>
       <Menu
@@ -555,6 +576,7 @@ const File = (props: FileProps) => {
         onClose={handleClosePopupMenu}
       >
         <MenuItem onClick={deleteFile}>Delete</MenuItem>
+        <MenuItem onClick={downloadFile}>Download</MenuItem>
       </Menu>
       <Button
         onContextMenu={handleContextMenu}
