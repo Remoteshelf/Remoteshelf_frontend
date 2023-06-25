@@ -120,7 +120,6 @@ const BrowsingPage = ({
   };
 
   useEffect(() => {
-    console.log("hi there");
     fetchFilesAndFolders(path);
   }, [path]);
 
