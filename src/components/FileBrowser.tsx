@@ -10,6 +10,8 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Menu,
+  MenuItem,
   TextField,
   Typography,
 } from "@mui/material";
@@ -97,6 +99,9 @@ const BrowsingPage = ({
           response.data.folders.map((folder: FolderDto) => (
             <Grid item key={folder.id}>
               <Folder
+                refresh={() => {
+                  fetchFilesAndFolders(pathRecord[pathRecord.length - 1]);
+                }}
                 folder={folder}
                 onFolderClick={() => {
                   handleOnFolderClick(folder.id, folder.name);
@@ -109,7 +114,12 @@ const BrowsingPage = ({
         setFiles(
           response.data.files.map((file: FileDto) => (
             <Grid item key={file.id}>
-              <File name={file.filename}></File>
+              <File
+                file={file}
+                refresh={() => {
+                  fetchFilesAndFolders(pathRecord[pathRecord.length - 1]);
+                }}
+              ></File>
             </Grid>
           ))
         );
@@ -442,13 +452,51 @@ const CreateFolderButton = (props: CreateFolderProps) => {
 
 interface FolderProps {
   folder: FolderDto;
+  refresh: () => void;
   onFolderClick: () => void;
 }
 
 const Folder = (props: FolderProps) => {
+  const [showPopupMenu, setShowPopupMenu] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  function handleContextMenu(event: any) {
+    event.preventDefault();
+    setAnchorEl(event.currentTarget);
+    setShowPopupMenu(true);
+  }
+
+  function handleClosePopupMenu() {
+    setShowPopupMenu(false);
+    setAnchorEl(null);
+  }
+  function deleteFolder() {
+    axios
+      .delete(`${Config.baseUrl}/folder/delete/${props.folder.id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      })
+      .then((response) => {
+        handleClosePopupMenu();
+        props.refresh();
+      })
+      .catch((error) => {
+        console.log("Error deleting!");
+        handleClosePopupMenu();
+      });
+  }
   return (
     <>
+      <Menu
+        anchorEl={anchorEl}
+        open={showPopupMenu}
+        onClose={handleClosePopupMenu}
+      >
+        <MenuItem onClick={deleteFolder}>Delete</MenuItem>
+      </Menu>
       <Button
+        onContextMenu={handleContextMenu}
         sx={{
           color: primaryGreenColor,
           textTransform: "none",
@@ -466,29 +514,69 @@ const Folder = (props: FolderProps) => {
   );
 };
 interface FileProps {
-  name: string;
+  file: FileDto;
+  refresh: () => void;
 }
-const File = ({ name }: FileProps) => {
+const File = (props: FileProps) => {
+  const [showPopupMenu, setShowPopupMenu] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  function handleContextMenu(event: any) {
+    event.preventDefault();
+    setAnchorEl(event.currentTarget);
+    setShowPopupMenu(true);
+  }
+
+  function handleClosePopupMenu() {
+    setShowPopupMenu(false);
+    setAnchorEl(null);
+  }
+  function deleteFile() {
+    axios
+      .delete(`${Config.baseUrl}/file/delete/${props.file.id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      })
+      .then((response) => {
+        handleClosePopupMenu();
+        props.refresh();
+      })
+      .catch((error) => {
+        console.log("Error deleting!");
+        handleClosePopupMenu();
+      });
+  }
   return (
-    <Button
-      sx={{
-        color: primaryGreenColor,
-        textTransform: "none",
-      }}
-    >
-      <Grid
+    <>
+      <Menu
+        anchorEl={anchorEl}
+        open={showPopupMenu}
+        onClose={handleClosePopupMenu}
+      >
+        <MenuItem onClick={deleteFile}>Delete</MenuItem>
+      </Menu>
+      <Button
+        onContextMenu={handleContextMenu}
         sx={{
+          color: primaryGreenColor,
           textTransform: "none",
         }}
-        container
-        direction={"column"}
-        flex={"Grid"}
       >
-        <Grid item>
-          <icons.FileCopy></icons.FileCopy>
+        <Grid
+          sx={{
+            textTransform: "none",
+          }}
+          container
+          direction={"column"}
+          flex={"Grid"}
+        >
+          <Grid item>
+            <icons.FileCopy></icons.FileCopy>
+          </Grid>
+          <Grid item> {props.file.filename}</Grid>
         </Grid>
-        <Grid item> {name}</Grid>
-      </Grid>
-    </Button>
+      </Button>
+    </>
   );
 };
