@@ -232,9 +232,9 @@ const BrowsingPage = ({
       <Grid container>
         <Grid
           item
-          height={"100vh"}
-          width={"15%"}
           sx={{
+            width: "15%",
+            minWidth: "100px",
             backgroundColor: `rgba(69,161,77,0.05)`,
           }}
         >
@@ -273,9 +273,12 @@ const BrowsingPage = ({
         </Grid>
 
         <Grid
-          item
+          container
           sx={{
             padding: "10px",
+            gap: "20px",
+            width: "85%",
+            alignContent: "start",
           }}
         >
           <DirectoryView
@@ -492,7 +495,14 @@ const Folder = (props: FolderProps) => {
         open={showPopupMenu}
         onClose={handleClosePopupMenu}
       >
-        <MenuItem onClick={deleteFolder}>Delete</MenuItem>
+        <MenuItem onClick={deleteFolder}>
+          <Grid container color={primaryGreenColor}>
+            <icons.Delete
+              style={{ width: 20, marginRight: "10px" }}
+            ></icons.Delete>
+            <Typography>Delete</Typography>
+          </Grid>
+        </MenuItem>
       </Menu>
       <Button
         onContextMenu={handleContextMenu}
@@ -502,7 +512,7 @@ const Folder = (props: FolderProps) => {
         }}
         onDoubleClick={props.onFolderClick}
       >
-        <Grid container direction={"column"} flex={"Grid"}>
+        <Grid container direction={"column"}>
           <Grid item>
             <icons.Folder></icons.Folder>
           </Grid>
@@ -575,8 +585,22 @@ const File = (props: FileProps) => {
         open={showPopupMenu}
         onClose={handleClosePopupMenu}
       >
-        <MenuItem onClick={deleteFile}>Delete</MenuItem>
-        <MenuItem onClick={downloadFile}>Download</MenuItem>
+        <MenuItem onClick={deleteFile}>
+          <Grid container color={primaryGreenColor}>
+            <icons.Delete
+              style={{ width: 20, marginRight: "10px" }}
+            ></icons.Delete>
+            <Typography>Delete</Typography>
+          </Grid>
+        </MenuItem>
+        <MenuItem onClick={downloadFile}>
+          <Grid container color={primaryGreenColor}>
+            <icons.Download
+              style={{ width: 20, marginRight: "10px" }}
+            ></icons.Download>
+            <Typography>Download</Typography>
+          </Grid>
+        </MenuItem>
       </Menu>
       <Button
         onContextMenu={handleContextMenu}
