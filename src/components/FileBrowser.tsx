@@ -1,17 +1,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
+  Box,
   Button,
+  Card,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogTitle,
   Grid,
+  IconButton,
   Input,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Menu,
-  MenuItem,
   TextField,
   Typography,
 } from "@mui/material";
@@ -22,6 +23,9 @@ import { FolderDto } from "../dto/FolderDto";
 import { Config } from "../config/config";
 import { FileDto } from "../dto/FileDto";
 import { useNavigate } from "react-router-dom";
+import { FolderCard } from "./folder/folder_card";
+import { FileCard } from "./file/file_card";
+import { Add } from "@mui/icons-material";
 const primaryGreenColor = "#144E49";
 
 const FileBrowser = () => {
@@ -68,14 +72,8 @@ const BrowsingPage = ({
   const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleOnFolderClick = (folderId: number, folderName: string) => {
-    setFolderId(folderId);
+  const handleOnFolderDoubleClick = (folderId: number, folderName: string) => {
     pathRecord.push(`/all/${folderId}`);
-    if (folderRecord.length > 1) {
-      folderRecord.push(` → ${folderName}`);
-    } else {
-      folderRecord.push(`${folderName}`);
-    }
     setPage(
       <BrowsingPage
         folderRecord={folderRecord}
@@ -85,6 +83,12 @@ const BrowsingPage = ({
         path={pathRecord[pathRecord.length - 1]}
       ></BrowsingPage>
     );
+    setFolderId(folderId);
+    if (folderRecord.length > 1) {
+      folderRecord.push(` → ${folderName}`);
+    } else {
+      folderRecord.push(`${folderName}`);
+    }
   };
 
   const fetchFilesAndFolders = (fetchPath: string) => {
@@ -98,27 +102,27 @@ const BrowsingPage = ({
         setFolders(
           response.data.folders.map((folder: FolderDto) => (
             <Grid item key={folder.id}>
-              <Folder
+              <FolderCard
                 refresh={() => {
                   fetchFilesAndFolders(pathRecord[pathRecord.length - 1]);
                 }}
                 folder={folder}
-                onFolderClick={() => {
-                  handleOnFolderClick(folder.id, folder.name);
+                onFolderDoubleClick={() => {
+                  handleOnFolderDoubleClick(folder.id, folder.name);
                 }}
-              ></Folder>
+              ></FolderCard>
             </Grid>
           ))
         );
         setFiles(
           response.data.files.map((file: FileDto) => (
             <Grid item key={file.id}>
-              <File
-                file={file}
+              <FileCard
                 refresh={() => {
                   fetchFilesAndFolders(pathRecord[pathRecord.length - 1]);
                 }}
-              ></File>
+                file={file}
+              ></FileCard>
             </Grid>
           ))
         );
@@ -235,47 +239,56 @@ const BrowsingPage = ({
           sx={{
             width: "15%",
             minWidth: "100px",
-            backgroundColor: `rgba(69,161,77,0.05)`,
           }}
         >
-          <Grid
-            container
-            sx={{ height: "100vh", paddingTop: "10px", paddingBottom: "10px" }}
-            alignContent={"space-between"}
+          <Card
+            sx={{
+              borderRadius: "8px",
+            }}
           >
-            <Grid container direction={"column"}>
-              <Grid item>
-                <FileUploadButton
-                  onClick={() => {
-                    setIsFileDialogOpen(true);
-                  }}
-                ></FileUploadButton>
+            <Grid
+              container
+              sx={{
+                height: "100vh",
+                paddingTop: "10px",
+                paddingBottom: "10px",
+              }}
+              alignContent={"space-between"}
+            >
+              <Grid container direction={"column"}>
+                <Grid item>
+                  <FileUploadButton
+                    onClick={() => {
+                      setIsFileDialogOpen(true);
+                    }}
+                  ></FileUploadButton>
+                </Grid>
+                <Grid item>
+                  <CreateFolderButton
+                    onClick={() => {
+                      setIsDialogOpen(true);
+                    }}
+                  ></CreateFolderButton>
+                </Grid>
               </Grid>
-              <Grid item>
-                <CreateFolderButton
+              <Grid item sx={{ width: "100%" }}>
+                <CustomListItemButton
+                  title="Logout"
+                  icon={<icons.Logout></icons.Logout>}
                   onClick={() => {
-                    setIsDialogOpen(true);
+                    localStorage.clear();
+                    navigate("/login");
                   }}
-                ></CreateFolderButton>
+                ></CustomListItemButton>
               </Grid>
             </Grid>
-            <Grid item sx={{ width: "100%" }}>
-              <CustomListItemButton
-                title="Logout"
-                icon={<icons.Logout></icons.Logout>}
-                onClick={() => {
-                  localStorage.clear();
-                  navigate("/login");
-                }}
-              ></CustomListItemButton>
-            </Grid>
-          </Grid>
+          </Card>
         </Grid>
 
         <Grid
           container
           sx={{
-            padding: "10px",
+            paddingLeft:'20px',
             gap: "20px",
             width: "85%",
             alignContent: "start",
@@ -288,8 +301,85 @@ const BrowsingPage = ({
               handleOnBackClicked();
             }}
           ></DirectoryView>
-          <Grid container spacing={2}>
+          <Grid
+            container
+            sx={{
+              direction: "column",
+            }}
+          >
+            <Grid container sx={{ direction: "column" }}>
+              <Grid>
+                <Grid container sx={{ direction: "row", alignItems: "center" }}>
+                  <Typography>Folders</Typography>
+                  <IconButton
+                    onClick={() => {
+                      setIsDialogOpen(true);
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        height: "20px",
+                        width: "20px",
+                        color: "white",
+                        backgroundColor: "green",
+                      }}
+                    >
+                      <Add sx={{ width: "16px" }}></Add>
+                    </Box>
+                  </IconButton>
+                </Grid>
+                <Typography
+                  sx={{
+                    color: "#A1AEB8",
+                  }}
+                >
+                  {folders.length} folders
+                </Typography>
+                <Box marginBottom={"10px"}></Box>
+              </Grid>
+            </Grid>{" "}
             {folders.map((folder) => folder)}
+            <Grid container sx={{ direction: "column" }}>
+              <Grid>
+                {" "}
+                <Box marginTop={"20px"}></Box>
+                <Grid container sx={{ direction: "row", alignItems: "center" }}>
+                  <Typography>Files</Typography>
+                  <IconButton
+                    onClick={() => {
+                      setIsFileDialogOpen(true);
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        height: "20px",
+                        width: "20px",
+                        color: "white",
+                        backgroundColor: "green",
+                      }}
+                    >
+                      <Add sx={{ width: "16px" }}></Add>
+                    </Box>
+                  </IconButton>
+                </Grid>
+                <Typography
+                  sx={{
+                    color: "#A1AEB8",
+                  }}
+                >
+                  {files.length} files
+                </Typography>
+                <Box marginBottom={"10px"} />
+              </Grid>
+            </Grid>
             {files.map((file) => file)}
           </Grid>
         </Grid>
@@ -408,14 +498,21 @@ const DirectoryView = (props: DirectoryViewProps) => {
       {props.pathRecord.length > 1 && (
         <Grid container alignItems={"center"}>
           <Grid item>
-            <Button
+            <IconButton
               sx={{
-                color: primaryGreenColor,
+                backgroundColor: "green",
+                color: "white",
+                marginRight: "10px",
               }}
               onClick={props.onBackClick}
             >
-              <icons.ArrowBack></icons.ArrowBack>
-            </Button>
+              <icons.ArrowBack
+                sx={{
+                  height: "16px",
+                  width: "16px",
+                }}
+              ></icons.ArrowBack>
+            </IconButton>
           </Grid>
           <Grid item>
             <Typography sx={{ color: "grey" }}>
@@ -449,180 +546,5 @@ const CreateFolderButton = (props: CreateFolderProps) => {
       title="Create Folder"
       icon={<icons.Add></icons.Add>}
     ></CustomListItemButton>
-  );
-};
-
-interface FolderProps {
-  folder: FolderDto;
-  refresh: () => void;
-  onFolderClick: () => void;
-}
-
-const Folder = (props: FolderProps) => {
-  const [showPopupMenu, setShowPopupMenu] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
-
-  function handleContextMenu(event: any) {
-    event.preventDefault();
-    setAnchorEl(event.currentTarget);
-    setShowPopupMenu(true);
-  }
-
-  function handleClosePopupMenu() {
-    setShowPopupMenu(false);
-    setAnchorEl(null);
-  }
-  function deleteFolder() {
-    axios
-      .delete(`${Config.baseUrl}/folder/delete/${props.folder.id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      })
-      .then((response) => {
-        handleClosePopupMenu();
-        props.refresh();
-      })
-      .catch((error) => {
-        console.log("Error deleting!");
-        handleClosePopupMenu();
-      });
-  }
-  return (
-    <>
-      <Menu
-        anchorEl={anchorEl}
-        open={showPopupMenu}
-        onClose={handleClosePopupMenu}
-      >
-        <MenuItem onClick={deleteFolder}>
-          <Grid container color={primaryGreenColor}>
-            <icons.Delete
-              style={{ width: 20, marginRight: "10px" }}
-            ></icons.Delete>
-            <Typography>Delete</Typography>
-          </Grid>
-        </MenuItem>
-      </Menu>
-      <Button
-        onContextMenu={handleContextMenu}
-        sx={{
-          color: primaryGreenColor,
-          textTransform: "none",
-        }}
-        onDoubleClick={props.onFolderClick}
-      >
-        <Grid container direction={"column"}>
-          <Grid item>
-            <icons.Folder></icons.Folder>
-          </Grid>
-          <Grid item> {props.folder.name}</Grid>
-        </Grid>
-      </Button>
-    </>
-  );
-};
-interface FileProps {
-  file: FileDto;
-  refresh: () => void;
-}
-const File = (props: FileProps) => {
-  const [showPopupMenu, setShowPopupMenu] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
-
-  function handleContextMenu(event: any) {
-    event.preventDefault();
-    setAnchorEl(event.currentTarget);
-    setShowPopupMenu(true);
-  }
-
-  function handleClosePopupMenu() {
-    setShowPopupMenu(false);
-    setAnchorEl(null);
-  }
-  function deleteFile() {
-    axios
-      .delete(`${Config.baseUrl}/file/delete/${props.file.id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      })
-      .then((response) => {
-        handleClosePopupMenu();
-        props.refresh();
-      })
-      .catch((error) => {
-        console.log("Error deleting!");
-        handleClosePopupMenu();
-      });
-  }
-  async function downloadFile() {
-    try {
-      const getEndpoint = `${Config.baseUrl}/file/download/${props.file.id}`;
-      const response = await axios.get(getEndpoint, {
-        responseType: "blob",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
-      const fileUrl = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = fileUrl;
-
-      link.download = props.file.filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.log("Error downloading", error);
-    }
-    handleClosePopupMenu();
-  }
-  return (
-    <>
-      <Menu
-        anchorEl={anchorEl}
-        open={showPopupMenu}
-        onClose={handleClosePopupMenu}
-      >
-        <MenuItem onClick={deleteFile}>
-          <Grid container color={primaryGreenColor}>
-            <icons.Delete
-              style={{ width: 20, marginRight: "10px" }}
-            ></icons.Delete>
-            <Typography>Delete</Typography>
-          </Grid>
-        </MenuItem>
-        <MenuItem onClick={downloadFile}>
-          <Grid container color={primaryGreenColor}>
-            <icons.Download
-              style={{ width: 20, marginRight: "10px" }}
-            ></icons.Download>
-            <Typography>Download</Typography>
-          </Grid>
-        </MenuItem>
-      </Menu>
-      <Button
-        onContextMenu={handleContextMenu}
-        sx={{
-          color: primaryGreenColor,
-          textTransform: "none",
-        }}
-      >
-        <Grid
-          sx={{
-            textTransform: "none",
-          }}
-          container
-          direction={"column"}
-          flex={"Grid"}
-        >
-          <Grid item>
-            <icons.FileCopy></icons.FileCopy>
-          </Grid>
-          <Grid item> {props.file.filename}</Grid>
-        </Grid>
-      </Button>
-    </>
   );
 };
