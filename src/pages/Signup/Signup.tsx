@@ -6,6 +6,7 @@ import {
   Button,
   CircularProgress,
   Grid,
+  Link,
   Snackbar,
   TextField,
   Typography,
@@ -167,7 +168,7 @@ const Form = () => {
     setAlertMesage(message);
     clearFields();
     setTimeout(() => {
-      navigate("/login");
+      navigate("/login", { replace: true });
     }, 2000);
   }
 
@@ -192,23 +193,8 @@ const Form = () => {
           </Typography>
         </Grid>
         <Box height={"2%"}></Box>
-        {/* <Grid container justifyContent={"center"}>
-            <Grid item>
-              <SocialSignupButton buttonName="Google"></SocialSignupButton>
-            </Grid>
-            <Grid item>
-              <SocialSignupButton buttonName="Facebook"></SocialSignupButton>
-            </Grid>
-          </Grid> */}
-        {/*  */}
-        {/* <Box height={"10%"}></Box> */}
-        {/*  */}
-        {/* <Grid item>
-            <Typography fontSize={24} color={primaryGreenColor}>- OR -</Typography>
-          </Grid> */}
-        {/*  */}
+
         <Box height={"5%"}></Box>
-        {/*  */}
         <Grid container direction={"column"} alignContent={"center"}>
           <Grid item>
             <InputField
@@ -277,19 +263,17 @@ const Form = () => {
               </Grid>
               <Box width={10}></Box>
               <Grid item>
-                <Button
+                <Link
                   style={{
-                    backgroundColor: primaryGreenColor,
-                    color: "white",
+                    color: primaryGreenColor,
                   }}
-                  variant="outlined"
                   onClick={() => {
-                    navigate("/login");
+                    navigate("/login", { replace: true });
                   }}
                 >
                   {" "}
                   Log In
-                </Button>
+                </Link>
               </Grid>
             </Grid>
           </Grid>

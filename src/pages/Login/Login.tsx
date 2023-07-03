@@ -4,6 +4,7 @@ import {
   Button,
   CircularProgress,
   Grid,
+  Link,
   Snackbar,
   TextField,
   Typography,
@@ -35,7 +36,7 @@ function LoginForm() {
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     if (token) {
-      navigate("/home");
+      navigate("/home", { replace: true });
     }
   }, [navigate]);
   function onFieldValueChange(event: any) {
@@ -53,7 +54,7 @@ function LoginForm() {
     setLoading(false);
     setIsSnackbarOpen(true);
     setAlertConfig({ severity: "success", message: message });
-    navigate("/home");
+    navigate("/home", { replace: true });
   }
   function onLoginClick() {
     setLoading(true);
@@ -97,7 +98,7 @@ function LoginForm() {
             container
             direction={"column"}
             justifyContent={"center"}
-            alignContent={"center"}
+            alignItems={"center"}
           >
             <Grid item>
               <Typography
@@ -143,8 +144,8 @@ function LoginForm() {
               justifyContent={"center"}
               alignItems={"center"}
             >
-              <Typography>A new user?</Typography>
-              <Button
+              <Typography>Don't have an account?</Typography>
+              <Link
                 onClick={() => {
                   navigate("/signup");
                 }}
@@ -153,10 +154,9 @@ function LoginForm() {
                   textTransform: "none",
                   color: primaryGreenColor,
                 }}
-                variant="text"
               >
                 Signup
-              </Button>
+              </Link>
             </Grid>
           </Grid>
         </Grid>

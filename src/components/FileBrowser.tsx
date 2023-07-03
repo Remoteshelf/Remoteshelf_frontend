@@ -13,6 +13,7 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Skeleton,
   TextField,
   Typography,
 } from "@mui/material";
@@ -71,6 +72,7 @@ const BrowsingPage = ({
   const [folderId, setFolderId] = useState(0);
   const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
 
   const handleOnFolderDoubleClick = (folderId: number, folderName: string) => {
     pathRecord.push(`/all/${folderId}`);
@@ -92,6 +94,7 @@ const BrowsingPage = ({
   };
 
   const fetchFilesAndFolders = (fetchPath: string) => {
+    setLoading(true);
     axios
       .get(`${Config.baseUrl}/folder${fetchPath}`, {
         headers: {
@@ -99,6 +102,7 @@ const BrowsingPage = ({
         },
       })
       .then((response) => {
+        setLoading(false);
         setFolders(
           response.data.folders.map((folder: FolderDto) => (
             <Grid item key={folder.id}>
@@ -128,6 +132,7 @@ const BrowsingPage = ({
         );
       })
       .catch((error) => {
+        setLoading(false);
         console.log(error);
       });
   };
@@ -277,7 +282,7 @@ const BrowsingPage = ({
                   icon={<icons.Logout></icons.Logout>}
                   onClick={() => {
                     localStorage.clear();
-                    navigate("/login");
+                    navigate("/login", { replace: true });
                   }}
                 ></CustomListItemButton>
               </Grid>
@@ -288,7 +293,7 @@ const BrowsingPage = ({
         <Grid
           container
           sx={{
-            paddingLeft:'20px',
+            paddingLeft: "20px",
             gap: "20px",
             width: "85%",
             alignContent: "start",
@@ -341,8 +346,10 @@ const BrowsingPage = ({
                 </Typography>
                 <Box marginBottom={"10px"}></Box>
               </Grid>
-            </Grid>{" "}
-            {folders.map((folder) => folder)}
+            </Grid>
+            {loading && <Loading></Loading>}
+
+            {!loading && folders.map((folder) => folder)}
             <Grid container sx={{ direction: "column" }}>
               <Grid>
                 {" "}
@@ -380,11 +387,28 @@ const BrowsingPage = ({
                 <Box marginBottom={"10px"} />
               </Grid>
             </Grid>
-            {files.map((file) => file)}
+            {loading && <Loading></Loading>}
+            {!loading && files.map((file) => file)}
           </Grid>
         </Grid>
       </Grid>
     </>
+  );
+};
+const Loading = () => {
+  return (
+    <Box sx={{ width: 200, height: 80 }}>
+      <Grid container sx={{ justifyContent: "space-between" }}>
+        <Skeleton
+          animation="wave"
+          variant="circular"
+          sx={{ height: 40, width: 40 }}
+        />
+        <Grid>
+          <Skeleton animation="wave" sx={{ width: 200, height: 70 }}></Skeleton>
+        </Grid>
+      </Grid>
+    </Box>
   );
 };
 interface FolderCreateDialogProps {
