@@ -1,5 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
+  Alert,
+  AlertColor,
   Box,
   Button,
   Card,
@@ -14,6 +16,7 @@ import {
   ListItemIcon,
   ListItemText,
   Skeleton,
+  Snackbar,
   TextField,
   Typography,
 } from "@mui/material";
@@ -27,6 +30,7 @@ import { useNavigate } from "react-router-dom";
 import { FolderCard } from "./folder/folder_card";
 import { FileCard } from "./file/file_card";
 import { Add } from "@mui/icons-material";
+import { ButtonLoading } from "./ButtonLoading";
 const primaryGreenColor = "#144E49";
 
 const FileBrowser = () => {
@@ -73,6 +77,13 @@ const BrowsingPage = ({
   const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [folderCreateProgress, setFolderCreateProgress] = useState(false);
+  const [fileUploadProgress, setFileUploadProgress] = useState(false);
+  const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
+  const [alertSeverity, setAlertSeverity] = useState<AlertColor | undefined>(
+    "success"
+  );
+  const [alertMessage, setAlertMesage] = useState("");
 
   const handleOnFolderDoubleClick = (folderId: number, folderName: string) => {
     pathRecord.push(`/all/${folderId}`);
@@ -142,6 +153,7 @@ const BrowsingPage = ({
   }, [path]);
 
   function handleOnFolderCreate() {
+    setFolderCreateProgress(true);
     axios
       .post(
         `${Config.baseUrl}/folder/create`,
@@ -160,18 +172,36 @@ const BrowsingPage = ({
         }
       )
       .then((response) => {
+        setFolderCreateProgress(false);
+
         fetchFilesAndFolders(path);
         setIsDialogOpen(false);
       })
       .catch((error) => {
-        console.log(error);
+        setFolderCreateProgress(false);
+        if (error.respones) {
+          handleOnError(error.response.message);
+        } else {
+          handleOnError("Something went wrong!");
+        }
       });
+  }
+  // function handleOnSuccess(message: string) {
+  //   setAlertSeverity("success");
+  //   setAlertMesage(message);
+  //   setIsSnackbarOpen(true);
+  // }
+  function handleOnError(message: string) {
+    setAlertSeverity("error");
+    setAlertMesage(message);
+    setIsSnackbarOpen(true);
   }
   function onFolderTextFieldValueChange(event: any) {
     setCreateFolderFieldText(event.target.value);
   }
 
   function handleFileUpload() {
+    setFileUploadProgress(true);
     const formData = new FormData();
     formData.append("file", selectedFile!);
     if (path !== "/root") {
@@ -185,10 +215,18 @@ const BrowsingPage = ({
         },
       })
       .then((response) => {
+        setFileUploadProgress(false);
+
         fetchFilesAndFolders(path);
         setIsFileDialogOpen(false);
       })
       .catch((error) => {
+        setFileUploadProgress(false);
+        if (error.respnose) {
+          handleOnError(error.respnose.message);
+        } else {
+          handleOnError("Something went wrong!");
+        }
         console.log(error);
       });
   }
@@ -210,9 +248,16 @@ const BrowsingPage = ({
       ></BrowsingPage>
     );
   }
+  function onClose() {
+    setIsSnackbarOpen(false);
+  }
   return (
     <>
+      <Snackbar open={isSnackbarOpen} autoHideDuration={3000} onClose={onClose}>
+        <Alert severity={alertSeverity}>{alertMessage}</Alert>
+      </Snackbar>
       <FileUploadDialog
+        isLoading={fileUploadProgress}
         onUpload={() => {
           handleFileUpload();
         }}
@@ -227,6 +272,7 @@ const BrowsingPage = ({
       ></FileUploadDialog>
 
       <FolderCreateDialog
+        isLoading={folderCreateProgress}
         open={isDialogOpen}
         onCancel={() => {
           setIsDialogOpen(false);
@@ -413,6 +459,7 @@ const Loading = () => {
 };
 interface FolderCreateDialogProps {
   open: boolean;
+  isLoading: boolean;
   onClose: () => void;
   onCreate: () => void;
   onCancel: () => void;
@@ -448,7 +495,8 @@ const FolderCreateDialog = (props: FolderCreateDialogProps) => {
           }}
           onClick={props.onCreate}
         >
-          Create
+          <Typography>Create</Typography>
+          {props.isLoading && <ButtonLoading color={primaryGreenColor} />}
         </Button>
       </DialogActions>
     </Dialog>
@@ -476,6 +524,7 @@ interface FileUploadDialogProps {
   onFileChange: (event: any) => void;
   onUpload: () => void;
   onCancel: () => void;
+  isLoading: boolean;
 }
 const FileUploadDialog = (props: FileUploadDialogProps) => {
   return (
@@ -505,7 +554,8 @@ const FileUploadDialog = (props: FileUploadDialogProps) => {
           }}
           onClick={props.onUpload}
         >
-          Upload
+          <Typography> Upload</Typography>
+          {props.isLoading && <ButtonLoading color={primaryGreenColor} />}
         </Button>
       </DialogActions>
     </Dialog>

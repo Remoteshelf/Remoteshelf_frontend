@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  CircularProgress,
   Grid,
   IconButton,
   MenuItem,
@@ -28,7 +29,10 @@ export const FolderCard = (props: FolderProps) => {
   const [favorite, setFavorite] = useState(false);
   const [showPopupMenu, setShowPopupMenu] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [isLoading, setLoading] = useState(false);
   function deleteFolder() {
+    handleClosePopupMenu();
+    setLoading(true);
     axios
       .delete(`${Config.baseUrl}/folder/delete/${props.folder.id}`, {
         headers: {
@@ -36,12 +40,11 @@ export const FolderCard = (props: FolderProps) => {
         },
       })
       .then((response) => {
-        handleClosePopupMenu();
         props.refresh();
       })
       .catch((error) => {
+        setLoading(false);
         console.log("Error deleting!");
-        handleClosePopupMenu();
       });
   }
 
@@ -64,8 +67,10 @@ export const FolderCard = (props: FolderProps) => {
       >
         <MenuItem onClick={deleteFolder}>
           <Grid container color={""}>
-            <Delete style={{ width: 20, marginRight: "10px" }}></Delete>
-            <Typography>Delete</Typography>
+            <Delete
+              style={{ width: 20, marginRight: "10px", color: "red" }}
+            ></Delete>
+            <Typography sx={{ color: "red" }}>Delete</Typography>
           </Grid>
         </MenuItem>
       </Popover>
@@ -81,6 +86,8 @@ export const FolderCard = (props: FolderProps) => {
       >
         <Box
           sx={{
+            display: "flex",
+            justifyContent: "center",
             border: 1,
             width: 200,
             height: 80,
@@ -89,45 +96,49 @@ export const FolderCard = (props: FolderProps) => {
             borderRadius: "8px",
           }}
         >
-          <Grid container sx={{ direction: "column", alignItems: "start" }}>
-            <Grid
-              container
-              sx={{
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <Folder
-                sx={{ color: "#FFCF5B", width: "40px", height: "40px" }}
-              ></Folder>
-              <Grid>
-                <IconButton
-                  onClick={() => {
-                    setFavorite(!favorite);
-                  }}
-                >
-                  {favorite == true ? (
-                    <Star sx={{ color: "#FFAC00" }}></Star>
-                  ) : (
-                    <StarOutline></StarOutline>
-                  )}
-                </IconButton>
-                <IconButton
-                  onClick={(e) => {
-                    handleOpenMenu(e);
-                  }}
-                >
-                  <MoreVert></MoreVert>
-                </IconButton>
+          {isLoading == true ? (
+            <CircularProgress sx={{ alignSelf: "center", color: "green" }} />
+          ) : (
+            <Grid container sx={{ direction: "column", alignItems: "start" }}>
+              <Grid
+                container
+                sx={{
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Folder
+                  sx={{ color: "#FFCF5B", width: "40px", height: "40px" }}
+                ></Folder>
+                <Grid>
+                  <IconButton
+                    onClick={() => {
+                      setFavorite(!favorite);
+                    }}
+                  >
+                    {favorite == true ? (
+                      <Star sx={{ color: "#FFAC00" }}></Star>
+                    ) : (
+                      <StarOutline></StarOutline>
+                    )}
+                  </IconButton>
+                  <IconButton
+                    onClick={(e) => {
+                      handleOpenMenu(e);
+                    }}
+                  >
+                    <MoreVert></MoreVert>
+                  </IconButton>
+                </Grid>
+              </Grid>
+              <Grid sx={{}}>
+                <Typography sx={{ color: "#343D47", textTransform: "none" }}>
+                  {" "}
+                  {props.folder.name}
+                </Typography>
               </Grid>
             </Grid>
-            <Grid sx={{}}>
-              <Typography sx={{ color: "#343D47", textTransform: "none" }}>
-                {" "}
-                {props.folder.name}
-              </Typography>
-            </Grid>
-          </Grid>
+          )}
         </Box>
       </Button>
     </>
