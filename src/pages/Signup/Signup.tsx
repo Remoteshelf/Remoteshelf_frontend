@@ -15,6 +15,7 @@ import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Config } from "../../config/config";
+import { ButtonLoading } from "../../components/ButtonLoading";
 const primaryGreenColor = "#144E49";
 
 const Signup = () => {
@@ -35,7 +36,6 @@ const Signup = () => {
             </Grid>
             <Grid
               item
-              spacing={0}
               xs={7}
               style={{
                 backgroundColor: "rgba(255, 255, 255, 0.85)",
@@ -46,7 +46,7 @@ const Signup = () => {
             </Grid>
           </Grid>
         </Grid>
-        <Grid item xs={12} style={{ zIndex: 3 }} spacing={0}>
+        <Grid item xs={12} style={{ zIndex: 3 }}>
           <ForeGroundImage></ForeGroundImage>
         </Grid>
       </Grid>
@@ -138,12 +138,16 @@ const Form = () => {
       })
       .catch((error) => {
         setIsLoading(false);
-        if (error.response.status == 403) {
-          handleOnError(error.response.data.message);
+        if (error.response) {
+          console.log(error.response);
+          if (error.response.status == 403) {
+            handleOnError(error.response.data.message);
+          } else {
+            handleOnError("Something went wrong!");
+          }
         } else {
-          handleOnError("Something went wrong!");
+          handleOnError(error.message);
         }
-        // handleOnError(error.response.data.message);
       });
   }
   function onInputChanged(
@@ -236,7 +240,7 @@ const Form = () => {
               label="Password"
             ></InputField>
           </Grid>
-          <Grid item alignSelf={"center"}>
+          <Grid item alignSelf={"center"} alignItems={"center"}>
             <Box m={5}>
               <Button
                 variant="contained"
@@ -245,11 +249,13 @@ const Form = () => {
                   onCreateAccountClicked();
                 }}
               >
-                {isLoading == true ? (
-                  <CircularProgress sx={{ color: "white" }}></CircularProgress>
-                ) : (
-                  <Typography>Create Account</Typography>
-                )}
+                <Typography
+                  paddingRight={"10px"}
+                  sx={{ textTransform: "none" }}
+                >
+                  Create Account
+                </Typography>
+                {isLoading == true && <ButtonLoading></ButtonLoading>}
               </Button>
             </Box>
           </Grid>

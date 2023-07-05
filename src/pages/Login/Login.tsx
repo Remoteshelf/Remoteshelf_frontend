@@ -13,6 +13,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Config } from "../../config/config";
+import { ButtonLoading } from "../../components/ButtonLoading";
 const primaryGreenColor = "#144E49";
 
 interface AlertConfig {
@@ -58,6 +59,7 @@ function LoginForm() {
   }
   function onLoginClick() {
     setLoading(true);
+
     axios
       .post(`${Config.baseUrl}/auth/signin`, loginPayload)
       .then((response) => {
@@ -65,11 +67,13 @@ function LoginForm() {
         handleOnSuccess("Login Successful!");
       })
       .catch((error) => {
-        console.log(error);
-        if (error.response.status == 403) {
-          handleOnError(error.response.data.message);
+        console.log(error.response);
+        if (error.respnose) {
+          if (error.response.status == 403) {
+            handleOnError(error.response.data.message);
+          }
         } else {
-          handleOnError("Login Failed");
+          handleOnError(error.message);
         }
       });
   }
@@ -126,17 +130,26 @@ function LoginForm() {
               ></FormField>
             </Grid>
             <Grid item>
-              {isLoading == true ? (
-                <CircularProgress />
-              ) : (
-                <Button
-                  style={{ width: 400, backgroundColor: primaryGreenColor }}
-                  variant="contained"
-                  onClick={onLoginClick}
+              <Button
+                style={{ width: 400, backgroundColor: primaryGreenColor }}
+                variant="contained"
+                onClick={
+                  isLoading == true
+                    ? () => {
+                        //Do noting
+                      }
+                    : onLoginClick
+                }
+              >
+                <Typography
+                  sx={{
+                    textTransform: "none",
+                  }}
                 >
                   Login
-                </Button>
-              )}
+                </Typography>
+                {isLoading == true && <ButtonLoading></ButtonLoading>}
+              </Button>
             </Grid>
             <Grid
               container
